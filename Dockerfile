@@ -4,5 +4,5 @@ ADD ./conf.d /etc/confd/conf.d
 ADD ./templates /etc/confd/templates
 ADD ./run.sh /opt/rancher/bin/
 
-ENTRYPOINT ["/confd"]
+ENTRYPOINT ["/confd/confd"]
 CMD ["--backend", "env", "--onetime", "-log-level", "debug"]
