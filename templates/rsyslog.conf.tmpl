@@ -19,15 +19,17 @@
          tls="on"
   )
 {{ end }}
+
 module(load="imudp")
 module(load="imtcp")
 module(load="imrelp")
 module(load="omrelp")
+module(load="mmjsonparse")
 
-input(type="imudp" port="1514" ruleset="dispatch")
-input(type="imtcp" port="1514" ruleset="dispatch")
-input(type="imrelp" port="2514" ruleset="dispatch" tls="off")
-input(type="imrelp" port="2515" ruleset="dispatch" tls="on")
+input(type="imudp" port="1514" ruleset="syslog")
+input(type="imtcp" port="1514" ruleset="syslog")
+input(type="imrelp" port="2514" tls="off" ruleset="cee")
+input(type="imrelp" port="2515" tls="on" ruleset="cee")
 
 $PrivDropToUser syslog
 $PrivDropToGroup syslog
@@ -36,22 +38,94 @@ $MaxMessageSize 32k
 $WorkDirectory /var/spool/rsyslog
 $ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
 
-template(name="ForwardFormatWithToken" type="string" string="<%PRI%>%TIMESTAMP:::date-rfc3339% %HOSTNAME% %syslogtag:1:64% TOKEN@{{getenv "TOKEN"}} %msg:::sp-if-no-1st-sp%%msg%")
+#TODO: kill rate limiting
 
-template(name="LocalDynafile" type="string" string="/var/log/%$now%/%hostname%-%programname%.%syslogfacility-text%.%syslogseverity-text%.log")
+
+# File path templates
+template(name="SyslogDynFile" type="string" string="/var/log/%$now%/syslog/%hostname%/%programname%.%syslogfacility-text%.%syslogseverity-text%.log")
+template(name="InternalDynFile" type="string" string="/var/log/%$now%/internal/%programname%.%syslogfacility-text%.%syslogseverity-text%.log")
+template(name="JournaldDynFile" type="string" string="/var/log/%$now%/journald/%hostname%/%programname%.%syslogfacility-text%.%syslogseverity-text%.log")
+template(name="ContainersDynFile" type="string" string="/var/log/%$now%/containers/%.containername%-%.containerid%.log")
+
+# Log lines templates
+template(name="ForwardFormatWithToken" type="string" string="<%PRI%>%TIMESTAMP:::date-rfc3339% %HOSTNAME% %syslogtag:1:64% TOKEN@{{getenv "TOKEN"}} %msg:::sp-if-no-1st-sp%%msg%")
+#template(name="CEETemplate" type="string" string="%TIMESTAMP% %HOSTNAME% %syslogtag% %$!all-json%\n")
+template(name="CEEsimple" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg%\n")
+#template(name="PureJSON" type="string" string="%$!all-json%\n")
 
 ruleset(
-  name="dispatch"
+  name="cee"
+  queue.type="LinkedList"
+) {
+  action(type="mmjsonparse")
+  set $.containername = $!CONTAINER_NAME;
+  set $.containerid = $!CONTAINER_ID;
+  set $.msg = $!MESSAGE;
+
+  if ($.containername != "") then {
+    call containers
+  } else {
+    call journald
+  }
+}
+
+ruleset(
+  name="syslog"
   queue.type="LinkedList"
 ) {
   action(type="omfile"
-         name="write_to_local_files"
-         dynaFile="LocalDynafile"
-         template="RSYSLOG_FileFormat"
+         name="syslog_dyn_file"
+         dynaFile="SyslogDynFile"
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
-{{ if ne "" (getenv "TARGET") -}}
-{{ template "remote_target" -}}
-{{ end -}}
 }
+
+ruleset(
+  name="internal"
+  queue.type="LinkedList"
+) {
+  action(type="omfile"
+         name="internal_dyn_file"
+         dynaFile="InternalDynFile"
+         dirCreateMode="0755"
+         FileCreateMode="0644"
+  )
+}
+
+ruleset(
+  name="journald"
+  queue.type="LinkedList"
+) {
+  action(type="omfile"
+         name="journald_dyn_file"
+         dynaFile="JournaldDynFile"
+         template="CEEsimple"
+         dirCreateMode="0755"
+         FileCreateMode="0644"
+  )
+}
+
+ruleset(
+  name="containers"
+  queue.type="LinkedList"
+) {
+  action(type="omfile"
+         name="containers_dyn_file"
+         dynaFile="ContainersDynFile"
+         #template="RSYSLOG_DebugFormat"
+         template="CEEsimple"
+         dirCreateMode="0755"
+         FileCreateMode="0644"
+  )
+}
+
+if ($inputname == "rsyslogd") then {
+  call internal
+}
+
+#TODO: reenable remote logging
+#{{ if ne "" (getenv "TARGET") -}}
+#{{ template "remote_target" -}}
+#{{ end -}}
+
