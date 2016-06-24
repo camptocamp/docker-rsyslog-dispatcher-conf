@@ -50,7 +50,8 @@ template(name="ContainersDynFile" type="string" string="/var/log/%$now%/containe
 # Log lines templates
 template(name="ForwardFormatWithToken" type="string" string="<%PRI%>%TIMESTAMP:::date-rfc3339% %HOSTNAME% %syslogtag:1:64% TOKEN@{{getenv "TOKEN"}} %msg:::sp-if-no-1st-sp%%msg%")
 #template(name="CEETemplate" type="string" string="%TIMESTAMP% %HOSTNAME% %syslogtag% %$!all-json%\n")
-template(name="CEEsimple" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg%\n")
+template(name="SimpleJournald" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg%\n")
+template(name="SimpleContainer" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg% %$.containertag%\n")
 #template(name="PureJSON" type="string" string="%$!all-json%\n")
 
 ruleset(
@@ -60,6 +61,7 @@ ruleset(
   action(type="mmjsonparse")
   set $.containername = $!CONTAINER_NAME;
   set $.containerid = $!CONTAINER_ID;
+  set $.containertag = $!CONTAINER_TAG;
   set $.msg = $!MESSAGE;
 
   if ($.containername != "") then {
@@ -100,7 +102,7 @@ ruleset(
   action(type="omfile"
          name="journald_dyn_file"
          dynaFile="JournaldDynFile"
-         template="CEEsimple"
+         template="SimpleJournald"
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
@@ -114,7 +116,7 @@ ruleset(
          name="containers_dyn_file"
          dynaFile="ContainersDynFile"
          #template="RSYSLOG_DebugFormat"
-         template="CEEsimple"
+         template="SimpleContainer"
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
