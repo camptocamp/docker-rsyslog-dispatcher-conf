@@ -81,6 +81,9 @@ ruleset(
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
+{{ if ne "" (getenv "TARGET") -}}
+{{ template "remote_target" -}}
+{{ end -}}
 }
 
 ruleset(
@@ -106,6 +109,9 @@ ruleset(
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
+{{ if ne "" (getenv "TARGET") -}}
+{{ template "remote_target" -}}
+{{ end -}}
 }
 
 ruleset(
@@ -120,14 +126,12 @@ ruleset(
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
+{{ if ne "" (getenv "TARGET") -}}
+{{ template "remote_target" -}}
+{{ end -}}
 }
 
 if ($inputname == "rsyslogd") then {
   call internal
 }
-
-#TODO: reenable remote logging
-#{{ if ne "" (getenv "TARGET") -}}
-#{{ template "remote_target" -}}
-#{{ end -}}
 
