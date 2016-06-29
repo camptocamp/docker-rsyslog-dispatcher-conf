@@ -34,11 +34,10 @@ input(type="imrelp" port="2515" tls="on" ruleset="cee")
 $PrivDropToUser syslog
 $PrivDropToGroup syslog
 
+$SystemLogRateLimitInterval 0
 $MaxMessageSize 32k
 $WorkDirectory /var/spool/rsyslog
 $ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
-
-#TODO: kill rate limiting
 
 
 # File path templates
