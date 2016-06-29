@@ -26,6 +26,8 @@ module(load="imrelp")
 module(load="omrelp")
 module(load="mmjsonparse")
 
+input(type="imudp" port="514" ruleset="syslog")
+input(type="imtcp" port="514" ruleset="syslog")
 input(type="imudp" port="1514" ruleset="syslog")
 input(type="imtcp" port="1514" ruleset="syslog")
 input(type="imrelp" port="2514" tls="off" ruleset="cee")
