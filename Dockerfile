@@ -5,4 +5,4 @@ ADD ./templates /etc/confd/templates
 ADD ./.placeholder /etc/rsyslog-confd/.placeholder
 
 ENTRYPOINT ["/confd/confd"]
-CMD ["--backend", "env", "--onetime", "-log-level", "debug"]
+CMD ["--backend", "env", "--onetime"]
