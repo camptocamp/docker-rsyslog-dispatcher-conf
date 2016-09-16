@@ -2,7 +2,7 @@
   action(type="omrelp"
          name="fwd_to_logserver"
          target="{{getenv "TARGET"}}"
-         template="ForwardFormatWithToken"
+         template="{{ . }}"
          port="5515"
          queue.type="LinkedList"
          queue.filename="fwd_queue"
@@ -49,7 +49,8 @@ template(name="JournaldDynFile" type="string" string="/var/log/%$now%/journald/%
 template(name="ContainersDynFile" type="string" string="/var/log/%$now%/containers/%.containername%-%.containerid%.log")
 
 # Log lines templates
-template(name="ForwardFormatWithToken" type="string" string="<%PRI%>%TIMESTAMP:::date-rfc3339% %HOSTNAME% %syslogtag:1:64% TOKEN@{{getenv "TOKEN"}} %msg:::sp-if-no-1st-sp%%msg%")
+template(name="PlainForwardFormatWithToken" type="string" string="<%PRI%>%TIMESTAMP:::date-rfc3339% %HOSTNAME% %syslogtag:1:64% TOKEN@{{getenv "TOKEN"}} %msg:::sp-if-no-1st-sp%%msg%")
+template(name="JSONForwardFormatWithToken" type="string" string="<%PRI%>%TIMESTAMP:::date-rfc3339% %HOSTNAME% %syslogtag:1:64% TOKEN@{{getenv "TOKEN"}} %$!all-json%\n")
 #template(name="CEETemplate" type="string" string="%TIMESTAMP% %HOSTNAME% %syslogtag% %$!all-json%\n")
 template(name="SimpleJournald" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg%\n")
 template(name="SimpleContainer" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg% %$.containertag%\n")
@@ -83,7 +84,7 @@ ruleset(
          FileCreateMode="0644"
   )
 {{ if ne "" (getenv "TARGET") -}}
-{{ template "remote_target" -}}
+{{ template "remote_target" "PlainForwardFormatWithToken" }}
 {{ end -}}
 }
 
@@ -111,7 +112,7 @@ ruleset(
          FileCreateMode="0644"
   )
 {{ if ne "" (getenv "TARGET") -}}
-{{ template "remote_target" -}}
+{{ template "remote_target" "JSONForwardFormatWithToken" }}
 {{ end -}}
 }
 
@@ -128,7 +129,7 @@ ruleset(
          FileCreateMode="0644"
   )
 {{ if ne "" (getenv "TARGET") -}}
-{{ template "remote_target" -}}
+{{ template "remote_target" "JSONForwardFormatWithToken" }}
 {{ end -}}
 }
 
