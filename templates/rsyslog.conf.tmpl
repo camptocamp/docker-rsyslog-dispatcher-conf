@@ -66,6 +66,13 @@ ruleset(
   set $.containertag = $!CONTAINER_TAG;
   set $.msg = $!MESSAGE;
 
+{{- if ne "" (getenv "EXTRA") -}}
+{{ $data := json (getenv "EXTRA") -}}
+  {{ range $data.fields }}
+  set $!{{.k}} = "{{.v}}";
+  {{- end -}}
+{{ end }}
+
   if ($.containername != "") then {
     call containers
   } else {
