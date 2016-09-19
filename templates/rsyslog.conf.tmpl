@@ -20,6 +20,7 @@
   )
 {{ end }}
 
+module(load="impstats" log.syslog="on" ruleset="pstats" format="cee" resetCounters="off" interval="30")
 module(load="imudp")
 module(load="imtcp")
 module(load="imrelp")
@@ -43,6 +44,7 @@ $ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
 
 # File path templates
 template(name="SyslogDynFile" type="string" string="/var/log/%$now%/syslog/%hostname%/%programname%.%syslogfacility-text%.%syslogseverity-text%.log")
+template(name="PstatsDynFile" type="string" string="/var/log/%$now%/pstats/pstats.log")
 template(name="InternalDynFile" type="string" string="/var/log/%$now%/internal/%programname%.%syslogfacility-text%.%syslogseverity-text%.log")
 template(name="JournaldDynFile" type="string" string="/var/log/%$now%/journald/%hostname%/%programname%.%syslogfacility-text%.%syslogseverity-text%.log")
 template(name="ContainersDynFile" type="string" string="/var/log/%$now%/containers/%.containername%-%.containerid%.log")
@@ -101,6 +103,18 @@ ruleset(
   action(type="omfile"
          name="internal_dyn_file"
          dynaFile="InternalDynFile"
+         dirCreateMode="0755"
+         FileCreateMode="0644"
+  )
+}
+
+ruleset(
+  name="pstats"
+  queue.type="LinkedList"
+) {
+  action(type="omfile"
+         name="pstats_dyn_file"
+         dynaFile="PstatsDynFile"
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
