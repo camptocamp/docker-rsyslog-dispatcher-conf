@@ -68,8 +68,8 @@ ruleset(
 
 {{- if ne "" (getenv "EXTRA") -}}
 {{ $data := json (getenv "EXTRA") -}}
-  {{ range $data.fields }}
-  set $!{{.k}} = "{{.v}}";
+  {{ range $k, $v := $data }}
+  set $!{{$k}} = "{{$v}}";
   {{- end -}}
 {{ end }}
 
