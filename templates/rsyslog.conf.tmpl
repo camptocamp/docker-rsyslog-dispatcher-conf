@@ -20,7 +20,7 @@
   )
 {{ end }}
 
-module(load="impstats" log.syslog="on" ruleset="pstats" format="cee" resetCounters="off" interval="30")
+module(load="impstats" log.syslog="on" ruleset="pstats" format="json" resetCounters="on" interval="10")
 module(load="imudp")
 module(load="imtcp")
 module(load="imrelp")
@@ -56,6 +56,39 @@ template(name="JSONForwardFormatWithToken" type="string" string="<%PRI%>%TIMESTA
 template(name="SimpleJournald" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg%\n")
 template(name="SimpleContainer" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg% %$.containertag%\n")
 #template(name="PureJSON" type="string" string="%$!all-json%\n")
+
+# StatsD protocol templates
+template(name="StatsDContainer" type="string" string="syslog.containers.%$.containername%:1|c\n")
+template(name="StatsDImUDP" type="string" string="syslog.input.udp:%$!submitted%|c\n")
+template(name="StatsDImTCP" type="string" string="syslog.input.tcp:%$!submitted%|c\n")
+template(name="StatsDImRELP" type="string" string="syslog.input.relp:%$!submitted%|c\n")
+template(name="StatsDQueue" type="list") {
+         constant(value="syslog.queue.")
+         property(name="$!name")
+         constant(value=".size:")
+             property(name="$!size")
+             constant(value="|g\n")
+         constant(value="syslog.queue.")
+         property(name="$!name")
+         constant(value=".enqueued:")
+             property(name="$!enqueued")
+             constant(value="|c\n")
+         constant(value="syslog.queue.")
+         property(name="$!name")
+         constant(value=".discarded_full:")
+             property(name="$!discarded.full")
+             constant(value="|c\n")
+         constant(value="syslog.queue.")
+         property(name="$!name")
+         constant(value=".discarded_nf:")
+             property(name="$!discarded.nf")
+             constant(value="|c\n")
+         constant(value="syslog.queue.")
+         property(name="$!name")
+         constant(value=".maxqsize:")
+             property(name="$!maxqsize")
+             constant(value="|g\n")
+        }
 
 ruleset(
   name="agent"
@@ -118,6 +151,38 @@ ruleset(
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
+
+  action(type="mmjsonparse")
+
+  if ($!origin == "core.queue") then {
+    action(type="omfwd"
+           target="10.42.24.101"
+           protocol="udp"
+           port="8125"
+           template="StatsDQueue"
+    )
+  } else if ($!origin == "imudp") then {
+    action(type="omfwd"
+           target="10.42.24.101"
+           protocol="udp"
+           port="8125"
+           template="StatsDImUDP"
+    )
+  } else if ($!origin == "imtcp") then {
+    action(type="omfwd"
+           target="10.42.24.101"
+           protocol="udp"
+           port="8125"
+           template="StatsDImTCP"
+    )
+  } else if ($!origin == "imrelp") then {
+    action(type="omfwd"
+           target="10.42.24.101"
+           protocol="udp"
+           port="8125"
+           template="StatsDImRELP"
+    )
+  }
 }
 
 ruleset(
@@ -148,6 +213,14 @@ ruleset(
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
+
+  action(type="omfwd"
+         target="10.42.24.101"
+         protocol="udp"
+         port="8125"
+         template="StatsDContainer"
+  )
+
 {{ if ne "" (getenv "TARGET") -}}
 {{ template "remote_target" "JSONForwardFormatWithToken" }}
 {{ end -}}
