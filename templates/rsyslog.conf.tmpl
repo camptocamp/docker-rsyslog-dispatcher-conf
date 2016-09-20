@@ -124,8 +124,14 @@ ruleset(
          dirCreateMode="0755"
          FileCreateMode="0644"
   )
+
 {{ if ne "" (getenv "TARGET") -}}
+  if ($msg startswith ' @cee:') or ($msg startswith '@cee:') then {
+    action(type="mmjsonparse" name="parse_json_from_syslog")
+{{ template "remote_target" "JSONForwardFormatWithToken" }}
+  } else {
 {{ template "remote_target" "PlainForwardFormatWithToken" }}
+  }
 {{ end -}}
 }
 
