@@ -91,10 +91,10 @@ template(name="StatsDQueue" type="list") {
         }
 
 ruleset(
-  name="agent"
+  name="from_agents"
   queue.type="LinkedList"
 ) {
-  action(type="mmjsonparse")
+  action(type="mmjsonparse" name="parse_json_from_agents")
   set $.containername = $!CONTAINER_NAME;
   set $.containerid = $!CONTAINER_ID;
   set $.containertag = $!CONTAINER_TAG;
@@ -115,7 +115,7 @@ ruleset(
 }
 
 ruleset(
-  name="syslog"
+  name="from_syslog"
   queue.type="LinkedList"
 ) {
   action(type="omfile"
@@ -130,7 +130,7 @@ ruleset(
 }
 
 ruleset(
-  name="internal"
+  name="from_internal"
   queue.type="LinkedList"
 ) {
   action(type="omfile"
@@ -142,7 +142,7 @@ ruleset(
 }
 
 ruleset(
-  name="pstats"
+  name="from_pstats"
   queue.type="LinkedList"
 ) {
   action(type="omfile"
@@ -152,10 +152,11 @@ ruleset(
          FileCreateMode="0644"
   )
 
-  action(type="mmjsonparse")
+  action(type="mmjsonparse" name="parse_json_from_pstats")
 
   if ($!origin == "core.queue") then {
     action(type="omfwd"
+           name="fwd_queue_stats"
            target="10.42.24.101"
            protocol="udp"
            port="8125"
@@ -163,6 +164,7 @@ ruleset(
     )
   } else if ($!origin == "imudp") then {
     action(type="omfwd"
+           name="fwd_imudp_stats"
            target="10.42.24.101"
            protocol="udp"
            port="8125"
@@ -170,6 +172,7 @@ ruleset(
     )
   } else if ($!origin == "imtcp") then {
     action(type="omfwd"
+           name="fwd_imtcp_stats"
            target="10.42.24.101"
            protocol="udp"
            port="8125"
@@ -177,6 +180,7 @@ ruleset(
     )
   } else if ($!origin == "imrelp") then {
     action(type="omfwd"
+           name="fwd_imrelp_stats"
            target="10.42.24.101"
            protocol="udp"
            port="8125"
@@ -186,7 +190,7 @@ ruleset(
 }
 
 ruleset(
-  name="journald"
+  name="from_agents_journald"
   queue.type="LinkedList"
 ) {
   action(type="omfile"
@@ -202,7 +206,7 @@ ruleset(
 }
 
 ruleset(
-  name="containers"
+  name="from_agents_containers"
   queue.type="LinkedList"
 ) {
   action(type="omfile"
@@ -215,6 +219,7 @@ ruleset(
   )
 
   action(type="omfwd"
+         name="fwd_containers_stats"
          target="10.42.24.101"
          protocol="udp"
          port="8125"
