@@ -20,19 +20,19 @@
   )
 {{ end }}
 
-module(load="impstats" log.syslog="on" ruleset="pstats" format="json" resetCounters="on" interval="10")
+module(load="impstats" log.syslog="on" ruleset="from_pstats" format="json" resetCounters="on" interval="10")
 module(load="imudp")
 module(load="imtcp")
 module(load="imrelp")
 module(load="omrelp")
 module(load="mmjsonparse")
 
-input(type="imudp" port="514" ruleset="syslog")
-input(type="imtcp" port="514" ruleset="syslog")
-input(type="imudp" port="1514" ruleset="syslog")
-input(type="imtcp" port="1514" ruleset="syslog")
-input(type="imrelp" port="2514" tls="off" ruleset="agent")
-input(type="imrelp" port="2515" tls="on" ruleset="agent")
+input(type="imudp" port="514" ruleset="from_syslog")
+input(type="imtcp" port="514" ruleset="from_syslog")
+input(type="imudp" port="1514" ruleset="from_syslog")
+input(type="imtcp" port="1514" ruleset="from_syslog")
+input(type="imrelp" port="2514" tls="off" ruleset="from_agents")
+input(type="imrelp" port="2515" tls="on" ruleset="from_agents")
 
 $PrivDropToUser syslog
 $PrivDropToGroup syslog
@@ -108,9 +108,9 @@ ruleset(
 {{ end }}
 
   if ($.containername != "") then {
-    call containers
+    call from_agents_containers
   } else {
-    call journald
+    call from_agents_journald
   }
 }
 
@@ -232,6 +232,6 @@ ruleset(
 }
 
 if ($inputname == "rsyslogd") then {
-  call internal
+  call from_internal
 }
 
