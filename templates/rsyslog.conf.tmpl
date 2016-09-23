@@ -18,7 +18,16 @@
          queue.discardmark="9750"
          tls="on"
   )
-{{ end }}
+{{ end -}}
+
+{{- define "custom_fields" }}
+  {{- if ne "" (getenv "EXTRA") -}}
+  {{ $data := json (getenv "EXTRA") -}}
+    {{ range $k, $v := $data }}
+  set $!{{$k}} = "{{$v}}";
+    {{- end -}}
+  {{ end }}
+{{ end -}}
 
 module(load="impstats" log.syslog="on" ruleset="from_pstats" format="json" resetCounters="on" interval="10")
 module(load="imudp")
@@ -100,12 +109,7 @@ ruleset(
   set $.containertag = $!CONTAINER_TAG;
   set $.msg = $!MESSAGE;
 
-{{- if ne "" (getenv "EXTRA") -}}
-{{ $data := json (getenv "EXTRA") -}}
-  {{ range $k, $v := $data }}
-  set $!{{$k}} = "{{$v}}";
-  {{- end -}}
-{{ end }}
+{{ template "custom_fields" }}
 
   if ($.containername != "") then {
     call from_agents_containers
@@ -128,6 +132,7 @@ ruleset(
 {{ if ne "" (getenv "TARGET") -}}
   if ($msg startswith ' @cee:') or ($msg startswith '@cee:') then {
     action(type="mmjsonparse" name="parse_json_from_syslog")
+{{ template "custom_fields" }}
 {{ template "remote_target" "JSONForwardFormatWithToken" }}
   } else {
 {{ template "remote_target" "PlainForwardFormatWithToken" }}
