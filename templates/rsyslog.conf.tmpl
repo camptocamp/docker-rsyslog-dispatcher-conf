@@ -122,16 +122,6 @@ ruleset(
   name="from_syslog"
   queue.type="LinkedList"
 ) {
-  action(type="omfile"
-         name="syslog_dyn_file"
-         dynaFile="SyslogDynFile"
-         dirCreateMode="0755"
-         FileCreateMode="0644"
-{{- if ne "" (getenv "DEBUG") }}
-         template="RSYSLOG_DebugFormat"
-{{- end }}
-  )
-
 {{ if ne "" (getenv "TARGET") -}}
   if ($msg startswith ' @cee:') or ($msg startswith '@cee:') then {
     action(type="mmjsonparse" name="parse_json_from_syslog")
@@ -141,6 +131,16 @@ ruleset(
 {{ template "remote_target" "PlainForwardFormatWithToken" }}
   }
 {{ end -}}
+
+  action(type="omfile"
+         name="syslog_dyn_file"
+         dynaFile="SyslogDynFile"
+         dirCreateMode="0755"
+         FileCreateMode="0644"
+{{- if ne "" (getenv "DEBUG") }}
+         template="RSYSLOG_DebugFormat"
+{{- end }}
+  )
 }
 
 ruleset(
@@ -162,16 +162,6 @@ ruleset(
   name="from_pstats"
   queue.type="LinkedList"
 ) {
-  action(type="omfile"
-         name="pstats_dyn_file"
-         dynaFile="PstatsDynFile"
-         dirCreateMode="0755"
-         FileCreateMode="0644"
-{{- if ne "" (getenv "DEBUG") }}
-         template="RSYSLOG_DebugFormat"
-{{- end }}
-  )
-
   action(type="mmjsonparse" name="parse_json_from_pstats")
 
   if ($!origin == "core.queue") then {
@@ -207,6 +197,16 @@ ruleset(
            template="StatsDImRELP"
     )
   }
+
+  action(type="omfile"
+         name="pstats_dyn_file"
+         dynaFile="PstatsDynFile"
+         dirCreateMode="0755"
+         FileCreateMode="0644"
+{{- if ne "" (getenv "DEBUG") }}
+         template="RSYSLOG_DebugFormat"
+{{- end }}
+  )
 }
 
 ruleset(
