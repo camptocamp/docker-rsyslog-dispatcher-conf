@@ -112,8 +112,10 @@ ruleset(
 {{ template "custom_fields" }}
 
   if ($.containername != "") then {
+    set $!logging_stack_source = "containers";
     call from_agents_containers
   } else {
+    set $!logging_stack_source = "journald";
     call from_agents_journald
   }
 }
@@ -126,6 +128,7 @@ ruleset(
   if ($msg startswith ' @cee:') or ($msg startswith '@cee:') then {
     action(type="mmjsonparse" name="parse_json_from_syslog")
 {{ template "custom_fields" }}
+    set $!logging_stack_source = "syslog_cee";
 {{ template "remote_target" "JSONForwardFormatWithToken" }}
   } else {
 {{ template "remote_target" "PlainForwardFormatWithToken" }}
