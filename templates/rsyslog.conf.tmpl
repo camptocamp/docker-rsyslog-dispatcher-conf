@@ -127,6 +127,9 @@ ruleset(
          dynaFile="SyslogDynFile"
          dirCreateMode="0755"
          FileCreateMode="0644"
+{{- if ne "" (getenv "DEBUG") }}
+         template="RSYSLOG_DebugFormat"
+{{- end }}
   )
 
 {{ if ne "" (getenv "TARGET") -}}
@@ -149,6 +152,9 @@ ruleset(
          dynaFile="InternalDynFile"
          dirCreateMode="0755"
          FileCreateMode="0644"
+{{- if ne "" (getenv "DEBUG") }}
+         template="RSYSLOG_DebugFormat"
+{{- end }}
   )
 }
 
@@ -161,6 +167,9 @@ ruleset(
          dynaFile="PstatsDynFile"
          dirCreateMode="0755"
          FileCreateMode="0644"
+{{- if ne "" (getenv "DEBUG") }}
+         template="RSYSLOG_DebugFormat"
+{{- end }}
   )
 
   action(type="mmjsonparse" name="parse_json_from_pstats")
@@ -207,9 +216,13 @@ ruleset(
   action(type="omfile"
          name="journald_dyn_file"
          dynaFile="JournaldDynFile"
-         template="SimpleJournald"
          dirCreateMode="0755"
          FileCreateMode="0644"
+{{- if eq "" (getenv "DEBUG") }}
+         template="SimpleJournald"
+{{- else }}
+         template="RSYSLOG_DebugFormat"
+{{- end }}
   )
 {{ if ne "" (getenv "TARGET") -}}
 {{ template "remote_target" "JSONForwardFormatWithToken" }}
@@ -223,10 +236,13 @@ ruleset(
   action(type="omfile"
          name="containers_dyn_file"
          dynaFile="ContainersDynFile"
-         #template="RSYSLOG_DebugFormat"
-         template="SimpleContainer"
          dirCreateMode="0755"
          FileCreateMode="0644"
+{{- if eq "" (getenv "DEBUG") }}
+         template="SimpleContainer"
+{{- else }}
+         template="RSYSLOG_DebugFormat"
+{{- end }}
   )
 
   action(type="omfwd"
