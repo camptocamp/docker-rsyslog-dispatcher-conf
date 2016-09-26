@@ -132,7 +132,7 @@ ruleset(
     action(type="mmjsonparse" name="parse_json_from_syslog")
     set $!logging_stack_source = "syslog_cee";
   } else {
-    set $!msg = $msg;
+    set $!MESSAGE = $msg;
     set $!fromhost = $fromhost;
     set $!fromhost_ip = $fromhost-ip;
     set $!hostname = $hostname;
