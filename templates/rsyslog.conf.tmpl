@@ -66,6 +66,10 @@ template(name="SimpleJournald" type="string" string="%TIMESTAMP:::date-rfc3339%:
 template(name="SimpleContainer" type="string" string="%TIMESTAMP:::date-rfc3339%: %$.msg% %$.containertag%\n")
 #template(name="PureJSON" type="string" string="%$!all-json%\n")
 
+# timestamp templates
+template(name="timegeneratedRFC3339" type="string" string="%timegenerated:::date-rfc3339%")
+template(name="timereportedRFC3339" type="string" string="%timereported:::date-rfc3339%")
+
 # StatsD protocol templates
 template(name="StatsDContainer" type="string" string="syslog.containers.%$.containername%:1|c\n")
 template(name="StatsDImUDP" type="string" string="syslog.input.udp:%$!submitted%|c\n")
@@ -125,14 +129,27 @@ ruleset(
   queue.type="LinkedList"
 ) {
 {{ if ne "" (getenv "TARGET") -}}
+{{ template "custom_fields" }}
   if ($msg startswith ' @cee:') or ($msg startswith '@cee:') then {
     action(type="mmjsonparse" name="parse_json_from_syslog")
-{{ template "custom_fields" }}
     set $!logging_stack_source = "syslog_cee";
-{{ template "remote_target" "JSONForwardFormatWithToken" }}
   } else {
-{{ template "remote_target" "PlainForwardFormatWithToken" }}
+    set $!msg = $msg;
+    set $!fromhost = $fromhost;
+    set $!fromhost_ip = $fromhost-ip;
+    set $!hostname = $hostname;
+    set $!inputname = $inputname;
+    set $!pri = $pri;
+    set $!programname = $programname;
+    set $!rawmsg = $rawmsg;
+    set $!syslogfacility = $syslogfacility;
+    set $!syslogseverity = $syslogseverity;
+    set $!syslogtag = $syslogtag;
+    set $!timegenerated = exec_template("timegeneratedRFC3339");
+    set $!timereported = exec_template("timereportedRFC3339");
+    set $!logging_stack_source = "syslog_plain";
   }
+{{ template "remote_target" "JSONForwardFormatWithToken" }}
 {{ end -}}
 
   action(type="omfile"
