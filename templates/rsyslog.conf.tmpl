@@ -190,7 +190,7 @@ ruleset(
            port="8125"
            template="StatsDQueue"
     )
-  } else if ($!origin == "imudp") then {
+  } else if ($!origin == "imudp" and $!submitted != "") then {
     action(type="omfwd"
            name="fwd_imudp_stats"
            target="10.42.24.101"
@@ -198,7 +198,7 @@ ruleset(
            port="8125"
            template="StatsDImUDP"
     )
-  } else if ($!origin == "imtcp") then {
+  } else if ($!origin == "imtcp" and $!submitted != "") then {
     action(type="omfwd"
            name="fwd_imtcp_stats"
            target="10.42.24.101"
@@ -206,7 +206,7 @@ ruleset(
            port="8125"
            template="StatsDImTCP"
     )
-  } else if ($!origin == "imrelp") then {
+  } else if ($!origin == "imrelp" and $!submitted != "") then {
     action(type="omfwd"
            name="fwd_imrelp_stats"
            target="10.42.24.101"
