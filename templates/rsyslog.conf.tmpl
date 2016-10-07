@@ -31,15 +31,15 @@
 
 module(load="impstats" log.syslog="on" ruleset="from_pstats" format="json" resetCounters="on" interval="10")
 module(load="imudp")
-module(load="imtcp")
+module(load="imtcp" keepalive="on" keepalive.time="600")
 module(load="imrelp")
 module(load="omrelp")
 module(load="mmjsonparse")
 
 input(type="imudp" port="514" ruleset="from_syslog")
-input(type="imtcp" port="514" ruleset="from_syslog" keepalive="on" keepalive.time="600")
+input(type="imtcp" port="514" ruleset="from_syslog")
 input(type="imudp" port="1514" ruleset="from_syslog")
-input(type="imtcp" port="1514" ruleset="from_syslog" keepalive="on" keepalive.time="600")
+input(type="imtcp" port="1514" ruleset="from_syslog")
 input(type="imrelp" port="2514" tls="off" ruleset="from_agents" keepalive="on" keepalive.time="600")
 input(type="imrelp" port="2515" tls="on" ruleset="from_agents" keepalive="on" keepalive.time="600")
 
