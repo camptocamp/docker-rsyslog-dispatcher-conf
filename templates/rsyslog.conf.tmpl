@@ -29,7 +29,7 @@
   {{ end }}
 {{ end -}}
 
-module(load="impstats" log.syslog="on" ruleset="from_pstats" format="json" resetCounters="on" interval="10")
+module(load="impstats" log.syslog="on" ruleset="from_pstats" format="cee" resetCounters="on" interval="10")
 module(load="imudp")
 module(load="imtcp" keepalive="on" keepalive.time="600")
 module(load="imrelp")
