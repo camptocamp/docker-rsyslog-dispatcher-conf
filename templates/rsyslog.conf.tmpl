@@ -29,7 +29,7 @@
   {{ end }}
 {{ end -}}
 
-module(load="impstats" log.syslog="on" ruleset="from_pstats" format="cee" resetCounters="on" interval="10")
+module(load="impstats" log.syslog="on" ruleset="from_pstats" format="json" resetCounters="on" interval="10")
 module(load="imudp")
 module(load="imtcp" keepalive="on" keepalive.time="600")
 module(load="imrelp")
@@ -131,8 +131,14 @@ ruleset(
 {{ if ne "" (getenv "TARGET") -}}
 {{ template "custom_fields" }}
   if ($msg startswith ' @cee:') or ($msg startswith '@cee:') then {
-    action(type="mmjsonparse" name="parse_json_from_syslog")
+    action(type="mmjsonparse" name="parse_cee_from_syslog")
     set $!logging_stack_source = "syslog_cee";
+  } else if ($msg startswith ' {') then {
+    action(type="mmjsonparse" cookie=" " name="parse_json_from_syslog")
+    set $!logging_stack_source = "syslog_json";
+  } else if ($msg startswith '{') then {
+    action(type="mmjsonparse" cookie="" name="parse_json_from_syslog")
+    set $!logging_stack_source = "syslog_json";
   } else {
     set $!MESSAGE = $msg;
     set $!fromhost = $fromhost;
@@ -186,7 +192,7 @@ ruleset(
   name="from_pstats"
   queue.type="LinkedList"
 ) {
-  action(type="mmjsonparse" name="parse_json_from_pstats")
+  action(type="mmjsonparse" cookie="" name="parse_json_from_pstats")
 
   if ($!origin == "core.queue") then {
     action(type="omfwd"
