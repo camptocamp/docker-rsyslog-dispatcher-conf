@@ -115,7 +115,7 @@ ruleset(
 
 {{ template "custom_fields" }}
 
-  if ($.containername != "") then {
+  if ($!syslogtag == "containers:") then {
     set $!logging_stack_source = "containers";
     call from_agents_containers
   } else {
