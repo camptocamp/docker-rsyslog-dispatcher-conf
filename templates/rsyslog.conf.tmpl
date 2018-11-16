@@ -34,6 +34,7 @@ module(load="imudp")
 module(load="imtcp" keepalive="on" keepalive.time="600")
 module(load="imrelp")
 module(load="omrelp")
+module(load="omstdout")
 module(load="mmjsonparse")
 
 input(type="imudp" port="514" ruleset="from_syslog")
@@ -177,6 +178,7 @@ ruleset(
   name="from_internal"
   queue.type="LinkedList"
 ) {
+  action(type="omstdout" name="internal_stdout")
   action(type="omfile"
          name="internal_dyn_file"
          dynaFile="InternalDynFile"
@@ -299,4 +301,3 @@ ruleset(
 if ($inputname == "rsyslogd") then {
   call from_internal
 }
-
