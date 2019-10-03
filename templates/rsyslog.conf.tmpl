@@ -1,11 +1,11 @@
 {{- define "remote_target" }}
   action(type="omrelp"
-         name="fwd_to_logserver"
+         name="fwd_to_logserver_from_{{ .Instance }}"
          target="{{getenv "TARGET"}}"
-         template="{{ . }}"
+         template="{{ .Template }}"
          port="5515"
          queue.type="LinkedList"
-         queue.filename="fwd_queue"
+         queue.filename="fwd_queue_from_{{ .Instance }}"
          action.resumeretrycount="-1"
          queue.dequeuebatchsize="100"
          queue.saveonshutdown="on"
@@ -157,9 +157,9 @@ ruleset(
     set $!logging_stack_source = "syslog_plain";
   }
 {{ if ne "" (getenv "TOKEN") -}}
-{{ template "remote_target" "JSONForwardFormatWithToken" }}
+{{ template "remote_target" (map "Instance" "syslog" "Template" "JSONForwardFormatWithToken") }}
 {{ else -}}
-{{ template "remote_target" "JSONForwardFormatWithoutToken" }}
+{{ template "remote_target" (map "Instance" "syslog" "Template" "JSONForwardFormatWithoutToken") }}
 {{ end -}}
 {{ end -}}
 
@@ -258,9 +258,9 @@ ruleset(
   )
 {{ if ne "" (getenv "TARGET") -}}
 {{ if ne "" (getenv "TOKEN") -}}
-{{ template "remote_target" "JSONForwardFormatWithToken" }}
+{{ template "remote_target" (map "Instance" "agents_journald" "Template" "JSONForwardFormatWithToken") }}
 {{ else -}}
-{{ template "remote_target" "JSONForwardFormatWithoutToken" }}
+{{ template "remote_target" (map "Instance" "agents_journald" "Template" "JSONForwardFormatWithoutToken") }}
 {{ end -}}
 {{ end -}}
 }
@@ -291,9 +291,9 @@ ruleset(
 
 {{ if ne "" (getenv "TARGET") -}}
 {{ if ne "" (getenv "TOKEN") -}}
-{{ template "remote_target" "JSONForwardFormatWithToken" }}
+{{ template "remote_target" (map "Instance" "agents_containers" "Template" "JSONForwardFormatWithToken") }}
 {{ else -}}
-{{ template "remote_target" "JSONForwardFormatWithoutToken" }}
+{{ template "remote_target" (map "Instance" "agents_containers" "Template" "JSONForwardFormatWithoutToken") }}
 {{ end -}}
 {{ end -}}
 }
