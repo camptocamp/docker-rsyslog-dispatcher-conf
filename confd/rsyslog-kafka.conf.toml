@@ -1,4 +1,4 @@
 [template]
-src = "rsyslog.conf.tmpl"
+src = "rsyslog-kafka.conf.tmpl"
 dest = "/etc/rsyslog-confd/rsyslog.conf"
 
