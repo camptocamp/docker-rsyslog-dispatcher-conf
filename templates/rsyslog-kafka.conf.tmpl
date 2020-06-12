@@ -197,7 +197,7 @@ ruleset(
   if ($!origin == "core.queue") then {
     action(type="omfwd"
            name="fwd_queue_stats"
-           target="10.42.24.101"
+           target="statsd.metrics.rancher.internal"
            protocol="udp"
            port="8125"
            template="StatsDQueue"
@@ -205,7 +205,7 @@ ruleset(
   } else if ($!origin == "imudp" and $!submitted != "") then {
     action(type="omfwd"
            name="fwd_imudp_stats"
-           target="10.42.24.101"
+           target="statsd.metrics.rancher.internal"
            protocol="udp"
            port="8125"
            template="StatsDImUDP"
@@ -213,7 +213,7 @@ ruleset(
   } else if ($!origin == "imtcp" and $!submitted != "") then {
     action(type="omfwd"
            name="fwd_imtcp_stats"
-           target="10.42.24.101"
+           target="statsd.metrics.rancher.internal"
            protocol="udp"
            port="8125"
            template="StatsDImTCP"
@@ -221,7 +221,7 @@ ruleset(
   } else if ($!origin == "imrelp" and $!submitted != "") then {
     action(type="omfwd"
            name="fwd_imrelp_stats"
-           target="10.42.24.101"
+           target="statsd.metrics.rancher.internal"
            protocol="udp"
            port="8125"
            template="StatsDImRELP"
@@ -277,7 +277,7 @@ ruleset(
 
   action(type="omfwd"
          name="fwd_containers_stats"
-         target="10.42.24.101"
+         target="statsd.metrics.rancher.internal"
          protocol="udp"
          port="8125"
          template="StatsDContainer"
