@@ -1,0 +1,4 @@
+[template]
+src = "rsyslog-relp-kafka.conf.tmpl"
+dest = "/etc/rsyslog-confd/rsyslog.conf"
+
